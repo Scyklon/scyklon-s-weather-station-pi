@@ -73,42 +73,42 @@ def connect():
     except:
         return False
 
-while connect() is True:
-    cTemp, pressure, altitude = bmpsensor.readBmp180()
-    rain_sensor.when_pressed = bucket_tipped
-    rainfall = count * BUCKET_SIZE
-    iso = time.ctime()
-    print ("Time now : %s " %iso)
-    print ("Rain : %.2f " %rainfall)
-    print ("Altitude : %.2f m" %altitude)
-    print ("Pressure : %.2f hPa " %pressure)
-    print ("Temperature in Celsius : %.2f C" %cTemp)
-    print ("connected" if connect() else "no internet!")
-    aio.send(rain.key, rainfall)
-    aio.send(bmptemp.key, cTemp)
-    aio.send(press.key, pressure)
-    aio.send(alt.key, altitude)
-    data = [
-    {
-      "measurement": measurement,
-          "tags": {
-              "location": location,
-          },
-          "time": time.ctime(),
-          "fields": {
-              "temperature" : cTemp,
-              "altitude": altitude,
-              "pressure": float(pressure),
-              "rainfall": rainfall
+while True:
+    if connect() is True:
+        cTemp, pressure, altitude = bmpsensor.readBmp180()
+        rain_sensor.when_pressed = bucket_tipped
+        rainfall = count * BUCKET_SIZE
+        iso = time.ctime()
+        print ("Time now : %s " %iso)
+        print ("Rain : %.2f " %rainfall)
+        print ("Altitude : %.2f m" %altitude)
+        print ("Pressure : %.2f hPa " %pressure)
+        print ("Temperature in Celsius : %.2f C" %cTemp)
+        print ("connected" if connect() else "no internet!")
+        aio.send(rain.key, rainfall)
+        aio.send(bmptemp.key, cTemp)
+        aio.send(press.key, pressure)
+        aio.send(alt.key, altitude)
+        data = [
+        {
+          "measurement": measurement,
+              "tags": {
+                  "location": location,
+              },
+              "time": time.ctime(),
+              "fields": {
+                  "temperature" : cTemp,
+                  "altitude": altitude,
+                  "pressure": float(pressure),
+                  "rainfall": rainfall
+              }
           }
-      }
-    ]
-    # Send the JSON data to InfluxDB
-    client.write_points(data)
-    
-    # avoid timeout from adafruit io
-    time.sleep(10)
-else:
-    print ("connected" if connect() else "no internet!")
-    time.sleep(10)
-
+        ]
+        # Send the JSON data to InfluxDB
+        client.write_points(data)
+        
+        # avoid timeout from adafruit io
+        time.sleep(10)
+    else:
+        print ("no internet!")
+        time.sleep(60)
